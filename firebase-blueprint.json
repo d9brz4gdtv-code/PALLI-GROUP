@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access control",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "name": { "type": "string", "description": "User display name" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "User role" },
+        "photoUrl": { "type": "string", "description": "User profile photo URL" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "lastUpdated": { "type": "string", "format": "date-time" }
+          }
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Manager": {
+      "title": "Manager",
+      "description": "Manager details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "department": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "photoUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "email", "department", "joinDate"]
+    },
+    "Accountant": {
+      "title": "Accountant",
+      "description": "Accountant details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "qualification": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "photoUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "email", "qualification", "joinDate"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "photoUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "email", "role", "joinDate"]
+    },
+    "Supervisor": {
+      "title": "Supervisor",
+      "description": "Supervisor details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "designation": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "dso": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "designation", "joinDate"]
+    },
+    "DSO": {
+      "title": "DSO",
+      "description": "DSO details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "area": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "performance": { "type": "number", "description": "Performance score/points" }
+      },
+      "required": ["id", "name", "phone", "area", "joinDate"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "Live notice for all users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "content", "createdAt", "active"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/managers/{id}": {
+      "schema": "Manager",
+      "description": "Managers collection"
+    },
+    "/accountants/{id}": {
+      "schema": "Accountant",
+      "description": "Accountants collection"
+    },
+    "/admins/{id}": {
+      "schema": "Admin",
+      "description": "Admins collection"
+    },
+    "/supervisors/{id}": {
+      "schema": "Supervisor",
+      "description": "Supervisors collection"
+    },
+    "/dsos/{id}": {
+      "schema": "DSO",
+      "description": "DSOs collection"
+    },
+    "/notices/{id}": {
+      "schema": "Notice",
+      "description": "Notices collection"
+    }
+  }
+}

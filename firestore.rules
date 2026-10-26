@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: uid (string), email (string), name (string), role (string), photoUrl (string)
+    //
+    // Collection: managers, accountants, admins, supervisors, dsos
+    // Fields: id (string), name (string), phone (string), email/area/qualification (string), joinDate (string), photoUrl (string)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email.matches("(?i)pollihat.nagad@gmail.com") ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidString(field, maxLen) {
+      return request.resource.data[field] is string && request.resource.data[field].size() <= maxLen;
+    }
+
+    // Domain Validators
+    function isValidUser() {
+      return hasOnlyAllowedFields(['uid', 'email', 'name', 'role', 'photoUrl', 'location']) &&
+             isValidString('uid', 128) &&
+             isValidString('email', 128) &&
+             isValidString('name', 128) &&
+             request.resource.data.role in ['admin', 'user'];
+    }
+
+    function isValidManagementDoc() {
+      return request.resource.data.id is string &&
+             request.resource.data.name is string &&
+             request.resource.data.name.size() <= 128;
+    }
+
+    function isValidDSODoc() {
+      return isValidManagementDoc() &&
+             (!('performance' in request.resource.data) || request.resource.data.performance is number);
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser() && 
+        (request.resource.data.role == 'user' || 
+         (request.resource.data.role == 'admin' && request.auth.token.email == "pollihat.nagad@gmail.com"));
+      allow update: if isAdmin() || 
+        (isOwner(userId) && 
+         request.resource.data.role == resource.data.role &&
+         (hasOnlyAllowedFields(['uid', 'email', 'name', 'role', 'photoUrl', 'location']) ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['location'])));
+      allow delete: if isAdmin();
+    }
+
+    // Management Collections
+    match /managers/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidManagementDoc();
+      allow delete: if isAdmin();
+    }
+
+    match /accountants/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidManagementDoc();
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidManagementDoc();
+      allow delete: if isAdmin();
+    }
+
+    match /supervisors/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidManagementDoc();
+      allow delete: if isAdmin();
+    }
+
+    match /dsos/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidDSODoc();
+      allow delete: if isAdmin();
+    }
+
+    match /notices/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Test connection
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

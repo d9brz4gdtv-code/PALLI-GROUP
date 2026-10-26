@@ -1,0 +1,5 @@
+{
+  "name": "Palli Hat",
+  "description": "A professional management dashboard for Palli Group with live tracking and notice features.",
+  "requestFramePermissions": ["geolocation"]
+}
